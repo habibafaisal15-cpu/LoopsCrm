@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { LEAD_STATUSES, type LeadStatus } from "@/data/types";
 import { useCrm } from "@/context/CrmContext";
+import { LeadAccessGate } from "@/components/LeadAccessGate";
 import { Button, Card, Field, Modal, PageHeader } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 
@@ -32,7 +33,7 @@ export default function LeadsPage() {
   );
 
   return (
-    <>
+    <LeadAccessGate>
       <PageHeader
         title="Leads"
         subtitle="Cold calls that turned into leads stay here until they become a client or are wasted."
@@ -198,6 +199,6 @@ export default function LeadsPage() {
           </form>
         ) : null}
       </Modal>
-    </>
+    </LeadAccessGate>
   );
 }

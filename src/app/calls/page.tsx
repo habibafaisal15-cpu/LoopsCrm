@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Plus } from "lucide-react";
 import { CALL_RESPONSES, type CallResponse } from "@/data/types";
 import { useCrm } from "@/context/CrmContext";
+import { LeadAccessGate } from "@/components/LeadAccessGate";
 import { Button, Card, Field, Modal, PageHeader } from "@/components/ui";
 import { formatDateTime } from "@/lib/utils";
 
@@ -29,7 +30,7 @@ export default function ColdCallingPage() {
   const generateLead = form.response === "interested" || form.createLead;
 
   return (
-    <>
+    <LeadAccessGate>
       <PageHeader
         title="Cold calling"
         subtitle={`${currentEmployee.greetingName || "You"} log every call and response here. Interested calls become leads.`}
@@ -180,6 +181,6 @@ export default function ColdCallingPage() {
           </div>
         </form>
       </Modal>
-    </>
+    </LeadAccessGate>
   );
 }

@@ -11,10 +11,11 @@ function bdStats(employee: Employee, range: WorkRange, crm: ReturnType<typeof us
   const work = crm.workFor(employee.id);
   const calls = work.coldCalls.filter((call) => inWorkRange(call.calledAt, range)).length;
   const leads = work.leads.filter((lead) => inWorkRange(lead.createdAt, range)).length;
+  const followUps = work.followUps.filter((item) => inWorkRange(item.createdAt, range)).length;
   const clients = work.leads.filter(
     (lead) => lead.status === "client" && lead.closedAt && inWorkRange(lead.closedAt, range),
   ).length;
-  return { calls, leads, clients };
+  return { calls, leads, followUps, clients };
 }
 
 export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
@@ -44,10 +45,11 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
       return {
         calls: sum.calls + row.calls,
         leads: sum.leads + row.leads,
+        followUps: sum.followUps + row.followUps,
         clients: sum.clients + row.clients,
       };
     },
-    { calls: 0, leads: 0, clients: 0 },
+    { calls: 0, leads: 0, followUps: 0, clients: 0 },
   );
 
   const rangeLabel = range === "today" ? "today" : range === "week" ? "this week" : "all time";
@@ -76,6 +78,10 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
           <div className="value">{totals.leads}</div>
         </Card>
         <Card className="kpi">
+          <div className="label">Follow-ups taken</div>
+          <div className="value">{totals.followUps}</div>
+        </Card>
+        <Card className="kpi">
           <div className="label">Clients closed</div>
           <div className="value">{totals.clients}</div>
         </Card>
@@ -102,6 +108,7 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
                   <th>Name</th>
                   <th>Calls</th>
                   <th>Leads</th>
+                  <th>Follow-ups</th>
                   <th>Clients</th>
                 </tr>
               </thead>
@@ -117,6 +124,7 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
                       </td>
                       <td>{row.calls}</td>
                       <td>{row.leads}</td>
+                      <td>{row.followUps}</td>
                       <td>{row.clients}</td>
                     </tr>
                   );

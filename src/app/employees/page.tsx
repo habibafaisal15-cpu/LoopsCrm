@@ -95,6 +95,9 @@ export default function EmployeesPage() {
                         {work.leads.filter((lead) => inWorkRange(lead.createdAt, "today")).length} leads today
                       </span>
                       <span className="chip">
+                        {work.followUps.filter((item) => inWorkRange(item.createdAt, "today")).length} follow-ups today
+                      </span>
+                      <span className="chip">
                         {work.leads.filter((lead) => lead.status === "client").length} clients
                       </span>
                     </>

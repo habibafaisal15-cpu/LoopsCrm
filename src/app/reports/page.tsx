@@ -17,7 +17,10 @@ export default function ReportsPage() {
 
   return (
     <>
-      <PageHeader title="Reports" subtitle="A quick read on pipeline health, including work by employee." />
+      <PageHeader
+        title="Reports"
+        subtitle="Work counts by person. Lead names and phone numbers are not shown to managers."
+      />
 
       <div className="kpi-row">
         <Card className="kpi">

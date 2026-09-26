@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useCrm } from "@/context/CrmContext";
+import { LeadAccessGate } from "@/components/LeadAccessGate";
 import { Button, Card, Field, Modal, PageHeader } from "@/components/ui";
 import { formatDateTime } from "@/lib/utils";
 import type { FollowUpOutcome } from "@/data/types";
@@ -28,7 +29,7 @@ export default function FollowUpsPage() {
   const lead = active ? leads.find((item) => item.id === active.leadId) : undefined;
 
   return (
-    <>
+    <LeadAccessGate>
       <PageHeader
         title="Follow-ups"
         subtitle="Reminders stay here until the client is closed or the lead is wasted."
@@ -136,6 +137,6 @@ export default function FollowUpsPage() {
           </form>
         ) : null}
       </Modal>
-    </>
+    </LeadAccessGate>
   );
 }

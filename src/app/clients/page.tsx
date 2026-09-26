@@ -1,6 +1,7 @@
 "use client";
 
 import { useCrm } from "@/context/CrmContext";
+import { LeadAccessGate } from "@/components/LeadAccessGate";
 import { Card, PageHeader } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 
@@ -9,7 +10,7 @@ export default function ClientsPage() {
   const clients = leads.filter((lead) => lead.status === "client");
 
   return (
-    <>
+    <LeadAccessGate>
       <PageHeader
         title="Clients"
         subtitle="Leads land here only after a business developer marks them closed."
@@ -37,6 +38,6 @@ export default function ClientsPage() {
           </Card>
         )}
       </div>
-    </>
+    </LeadAccessGate>
   );
 }

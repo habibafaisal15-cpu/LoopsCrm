@@ -11,7 +11,7 @@ export default function TeamWorkPage() {
     return (
       <PageHeader
         title="Team work"
-        subtitle="Only the admin and manager can open everyone's daily work."
+        subtitle="Only the admin and manager can open the team scoreboard."
       />
     );
   }
@@ -20,7 +20,7 @@ export default function TeamWorkPage() {
     <>
       <PageHeader
         title="Team work"
-        subtitle="Manager view — BD calls, leads and closed clients, plus every developer's daily log."
+        subtitle="Who did how much work: calls, leads generated, follow-ups taken, clients closed, and developer logs. Lead names and numbers stay hidden from managers."
       />
       <TeamWorkBoard />
     </>

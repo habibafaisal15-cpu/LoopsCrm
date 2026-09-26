@@ -79,6 +79,10 @@ export function canSeeAllWork(role: string) {
   return role === "admin" || role === "manager";
 }
 
+export function canSeeLeadDetails(role: string) {
+  return role === "admin" || role === "sales";
+}
+
 export function canAssignWork(role: string) {
-  return canSeeAllWork(role);
+  return role === "admin";
 }

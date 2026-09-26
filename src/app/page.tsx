@@ -17,7 +17,7 @@ import { DEV_WORK_KINDS } from "@/data/types";
 import { formatDateTime } from "@/lib/utils";
 
 export default function DashboardPage() {
-  const { profile, canSeeAllWork, isDeveloper, workLogs } = useCrm();
+  const { profile, canSeeAllWork, canSeeLeadDetails, isDeveloper, workLogs } = useCrm();
   const today = workLogs.filter((item) => inWorkRange(item.workedAt, "today"));
 
   return (
@@ -28,11 +28,13 @@ export default function DashboardPage() {
             {greetingFor()}, {profile.greetingName} ✨
           </h1>
           <p>
-            {canSeeAllWork
-              ? "Team daily work — BD calls, leads and closed clients, plus developer logs."
-              : isDeveloper
-                ? "Log today's websites, POS builds, discussions, ideas and extra work."
-                : "Your daily calls, leads and follow-up reminders."}
+            {canSeeAllWork && !canSeeLeadDetails
+              ? "Team scoreboard only — who made how many calls, leads and follow-ups. No names or numbers."
+              : canSeeAllWork
+                ? "Team daily work plus every lead and phone number."
+                : isDeveloper
+                  ? "Log today's websites, POS builds, discussions, ideas and extra work."
+                  : "Your daily calls, leads and follow-up reminders."}
           </p>
         </div>
         <time dateTime={new Date().toISOString()}>{longDate()}</time>
@@ -83,7 +85,7 @@ export default function DashboardPage() {
         </div>
       ) : null}
 
-      {!isDeveloper ? (
+      {!isDeveloper && canSeeLeadDetails ? (
         <div className="dash-grid" style={{ marginTop: canSeeAllWork ? 24 : 0 }}>
           <div className="stack">
             <KpiCards />

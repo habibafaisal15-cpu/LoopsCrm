@@ -45,6 +45,7 @@ interface CrmContextValue extends CrmData {
   error: string;
   isAdmin: boolean;
   canSeeAllWork: boolean;
+  canSeeLeadDetails: boolean;
   canAssignWork: boolean;
   visibleContacts: Contact[];
   visibleDeals: Deal[];
@@ -196,6 +197,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
   const value = useMemo<CrmContextValue>(() => {
     const isAdmin = currentEmployee.role === "admin";
     const canSeeAll = currentEmployee.role === "admin" || currentEmployee.role === "manager";
+    const canSeeLeadDetails = currentEmployee.role === "admin" || currentEmployee.role === "sales";
 
     return {
       employees,
@@ -222,7 +224,8 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       error,
       isAdmin,
       canSeeAllWork: canSeeAll,
-      canAssignWork: canSeeAll,
+      canSeeLeadDetails,
+      canAssignWork: isAdmin,
       isDeveloper: currentEmployee.role === "developer",
       isSales: currentEmployee.role === "sales",
       visibleContacts: contacts,

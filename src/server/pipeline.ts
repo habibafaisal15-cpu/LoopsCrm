@@ -3,8 +3,14 @@ import { logActivity } from "./crm";
 import { nextId } from "./seed";
 import type { CallResponse, Employee, FollowUpOutcome, LeadStatus } from "@/data/types";
 
+function assertCanWorkPipeline(actor: Employee) {
+  if (actor.role !== "admin" && actor.role !== "sales") {
+    throw new Error("Managers can see team counts only, not lead details");
+  }
+}
+
 function assertOwn(actor: Employee, ownerId: string, message: string) {
-  if (actor.role !== "admin" && actor.role !== "manager" && actor.id !== ownerId) {
+  if (actor.role !== "admin" && actor.id !== ownerId) {
     throw new Error(message);
   }
 }
@@ -23,6 +29,7 @@ export async function logColdCall(
     followUpDetails?: string;
   },
 ) {
+  assertCanWorkPipeline(actor);
   const ownerId = actor.id;
   const createLead = Boolean(input.createLead || input.response === "interested");
   let leadId: string | undefined;
@@ -98,6 +105,7 @@ export async function createLead(
     followUpDetails?: string;
   },
 ) {
+  assertCanWorkPipeline(actor);
   const lead = await db.lead.create({
     data: {
       id: nextId("ld"),
@@ -135,6 +143,7 @@ export async function scheduleFollowUp(
   actor: Employee,
   input: { leadId: string; dueAt: string; details: string },
 ) {
+  assertCanWorkPipeline(actor);
   const lead = await db.lead.findUnique({ where: { id: input.leadId } });
   if (!lead) throw new Error("Lead not found");
   assertOwn(actor, lead.ownerId, "You can only follow up your own leads");
@@ -170,6 +179,7 @@ export async function completeFollowUp(
     nextDetails?: string;
   },
 ) {
+  assertCanWorkPipeline(actor);
   const current = await db.followUp.findUnique({ where: { id }, include: { lead: true } });
   if (!current) throw new Error("Follow-up not found");
   assertOwn(actor, current.ownerId, "You can only close your own follow-ups");
@@ -234,6 +244,7 @@ export async function completeFollowUp(
 }
 
 export async function updateLeadStatus(actor: Employee, id: string, status: LeadStatus, notes?: string) {
+  assertCanWorkPipeline(actor);
   const lead = await db.lead.findUnique({ where: { id } });
   if (!lead) throw new Error("Lead not found");
   assertOwn(actor, lead.ownerId, "You can only update your own leads");

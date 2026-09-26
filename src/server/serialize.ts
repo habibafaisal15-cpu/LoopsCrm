@@ -220,6 +220,51 @@ export function asFollowUp(row: {
   };
 }
 
+export function redactLead(lead: Lead): Lead {
+  return {
+    ...lead,
+    name: "",
+    phone: "",
+    email: "",
+    company: "",
+    notes: "",
+  };
+}
+
+export function redactColdCall(call: ColdCall): ColdCall {
+  return {
+    ...call,
+    name: "",
+    phone: "",
+    company: "",
+    notes: "",
+  };
+}
+
+export function redactFollowUp(item: FollowUpItem): FollowUpItem {
+  return {
+    ...item,
+    details: "",
+    result: "",
+  };
+}
+
+export function redactActivity(item: Activity): Activity {
+  const labels: Record<Activity["type"], string> = {
+    call: "Logged a cold call",
+    email: "Logged an email",
+    meeting: "Logged a meeting",
+    deal: "Updated pipeline work",
+    message: "Logged a message",
+    work: "Logged daily work",
+  };
+  return {
+    ...item,
+    text: labels[item.type] || "Logged work",
+    detail: undefined,
+  };
+}
+
 export function asDevWork(row: {
   id: string;
   workedAt: Date;

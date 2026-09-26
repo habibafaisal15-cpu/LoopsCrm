@@ -21,8 +21,8 @@ export const PIPELINE_STAGES: { id: DealStage; label: string }[] = [
 ];
 
 export const EMPLOYEE_ROLES: { id: EmployeeRole; label: string; description: string }[] = [
-  { id: "admin", label: "Admin", description: "Add employees, open every profile, and review all work" },
-  { id: "manager", label: "Manager", description: "See the team pipeline and assign work" },
+  { id: "admin", label: "Admin", description: "See every lead and phone number, add employees, and review all work" },
+  { id: "manager", label: "Manager", description: "See who did how many calls, leads and follow-ups — not names or numbers" },
   { id: "sales", label: "Business Developer", description: "Daily cold calls, leads, follow-ups and closed clients" },
   { id: "developer", label: "Developer", description: "Log websites, POS builds, discussions, ideas and extra work" },
   { id: "support", label: "Support", description: "Own conversations and customer tasks" },

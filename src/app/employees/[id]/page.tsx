@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { EMPLOYEE_ROLES, type EmployeeRole } from "@/data/types";
+import { EMPLOYEE_ROLES, LEAD_STATUSES, type EmployeeRole } from "@/data/types";
 import { useCrm } from "@/context/CrmContext";
 import { Avatar, Button, Card, PageHeader, RoleBadge, StatusBadge, TypePill } from "@/components/ui";
 import { formatCurrency, formatDate, formatDateTime, inWorkRange, relativeTime } from "@/lib/utils";
@@ -23,6 +23,7 @@ export default function EmployeeProfilePage() {
   const employee = employeeById(params.id);
   const [role, setRole] = useState<EmployeeRole | undefined>(employee?.role);
   const canViewWork = Boolean(employee && (canSeeAllWork || currentEmployee.id === employee.id));
+  const canSeePersonPii = Boolean(employee && (isAdmin || currentEmployee.id === employee.id));
 
   const work = useMemo(
     () =>
@@ -70,7 +71,7 @@ export default function EmployeeProfilePage() {
             <Link href="/employees" className="btn outline">
               All employees
             </Link>
-            {currentEmployee.id !== employee.id ? (
+            {isAdmin && currentEmployee.id !== employee.id ? (
               <span className="chip">Sign in as {employee.email} to work as this person</span>
             ) : null}
           </div>
@@ -156,6 +157,9 @@ export default function EmployeeProfilePage() {
             <Card className="kpi">
               <div className="label">Open follow-ups</div>
               <div className="value">{work.followUps.filter((item) => item.outcome === "pending").length}</div>
+              <div className="trend">
+                {work.followUps.filter((item) => inWorkRange(item.createdAt, "today")).length} taken today
+              </div>
             </Card>
           </>
         ) : (
@@ -204,6 +208,53 @@ export default function EmployeeProfilePage() {
       </Card>
       ) : null}
 
+      {canSeePersonPii && employee.role === "sales" ? (
+      <Card>
+        <div className="card-head">
+          <h2>Leads and numbers</h2>
+        </div>
+        <div className="table-wrap">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Company</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {work.leads.length ? (
+                work.leads.map((lead) => (
+                  <tr key={lead.id}>
+                    <td>
+                      <strong>{lead.name}</strong>
+                      {lead.email ? <div className="muted-kind">{lead.email}</div> : null}
+                    </td>
+                    <td>{lead.phone}</td>
+                    <td>{lead.company || "—"}</td>
+                    <td>
+                      <span className={`lead-badge ${lead.status}`}>
+                        {LEAD_STATUSES.find((status) => status.id === lead.status)?.label}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={4}>
+                    <p className="empty-note">No leads on this profile yet.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+      ) : null}
+
+      {canSeePersonPii ? (
+      <>
       <div className="kpi-row">
         <Card className="kpi">
           <div className="label">Contacts owned</div>
@@ -320,6 +371,14 @@ export default function EmployeeProfilePage() {
           </div>
         </Card>
       </div>
+      </>
+      ) : canViewWork ? (
+        <Card>
+          <p className="empty-note">
+            Managers see counts only. Lead names and phone numbers are visible to admin and the person who logged them.
+          </p>
+        </Card>
+      ) : null}
       </>
       ) : (
         <Card>

@@ -8,36 +8,54 @@ import { useCrm } from "@/context/CrmContext";
 import { Avatar } from "@/components/ui";
 
 export function TopBar({ onMenu }: { onMenu: () => void }) {
-  const { visibleContacts, companies, visibleDeals, leads, employees, currentEmployee, profile, logout, visibleThreads } =
-    useCrm();
+  const {
+    visibleContacts,
+    companies,
+    visibleDeals,
+    leads,
+    employees,
+    currentEmployee,
+    profile,
+    logout,
+    visibleThreads,
+    canSeeLeadDetails,
+  } = useCrm();
   const [query, setQuery] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
-    const contactHits = visibleContacts
-      .filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q))
-      .slice(0, 3)
-      .map((c) => ({ href: "/contacts", label: c.name, kind: "Contact" }));
-    const companyHits = companies
-      .filter((c) => c.name.toLowerCase().includes(q))
-      .slice(0, 3)
-      .map((c) => ({ href: "/companies", label: c.name, kind: "Company" }));
-    const dealHits = visibleDeals
-      .filter((d) => d.title.toLowerCase().includes(q))
-      .slice(0, 3)
-      .map((d) => ({ href: "/deals", label: d.title, kind: "Deal" }));
-    const leadHits = leads
-      .filter((l) => l.name.toLowerCase().includes(q) || l.company.toLowerCase().includes(q))
-      .slice(0, 3)
-      .map((l) => ({ href: "/leads", label: l.name, kind: "Lead" }));
+    const contactHits = canSeeLeadDetails
+      ? visibleContacts
+          .filter((c) => c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q))
+          .slice(0, 3)
+          .map((c) => ({ href: "/contacts", label: c.name, kind: "Contact" }))
+      : [];
+    const companyHits = canSeeLeadDetails
+      ? companies
+          .filter((c) => c.name.toLowerCase().includes(q))
+          .slice(0, 3)
+          .map((c) => ({ href: "/companies", label: c.name, kind: "Company" }))
+      : [];
+    const dealHits = canSeeLeadDetails
+      ? visibleDeals
+          .filter((d) => d.title.toLowerCase().includes(q))
+          .slice(0, 3)
+          .map((d) => ({ href: "/deals", label: d.title, kind: "Deal" }))
+      : [];
+    const leadHits = canSeeLeadDetails
+      ? leads
+          .filter((l) => l.name.toLowerCase().includes(q) || l.phone.includes(q) || l.company.toLowerCase().includes(q))
+          .slice(0, 3)
+          .map((l) => ({ href: "/leads", label: `${l.name} · ${l.phone}`, kind: "Lead" }))
+      : [];
     const employeeHits = employees
       .filter((e) => e.name.toLowerCase().includes(q) || e.email.toLowerCase().includes(q))
       .slice(0, 3)
       .map((e) => ({ href: `/employees/${e.id}`, label: e.name, kind: "Employee" }));
     return [...leadHits, ...employeeHits, ...contactHits, ...companyHits, ...dealHits];
-  }, [query, visibleContacts, companies, visibleDeals, leads, employees]);
+  }, [query, visibleContacts, companies, visibleDeals, leads, employees, canSeeLeadDetails]);
 
   return (
     <header className="topbar">
@@ -50,7 +68,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
         <input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search contacts, companies, deals, team..."
+          placeholder={canSeeLeadDetails ? "Search leads, numbers, contacts, team..." : "Search team..."}
         />
         {results.length > 0 ? (
           <div className="search-results">

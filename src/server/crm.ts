@@ -1,6 +1,21 @@
 import { db } from "./db";
-import { canAssignWork, canSeeAllWork, hashPassword } from "./auth";
-import { asActivity, asColdCall, asContact, asDeal, asDevWork, asFollowUp, asLead, asTask, asThread, publicEmployee } from "./serialize";
+import { canAssignWork, canSeeAllWork, canSeeLeadDetails, hashPassword } from "./auth";
+import {
+  asActivity,
+  asColdCall,
+  asContact,
+  asDeal,
+  asDevWork,
+  asFollowUp,
+  asLead,
+  asTask,
+  asThread,
+  publicEmployee,
+  redactActivity,
+  redactColdCall,
+  redactFollowUp,
+  redactLead,
+} from "./serialize";
 import { nextId } from "./seed";
 import { roleLabel, type DealStage, type Employee, type EmployeeRole } from "@/data/types";
 
@@ -29,18 +44,29 @@ export async function loadWorkspace(employee: Employee) {
       db.devWork.findMany({ where: filter, orderBy: { workedAt: "desc" } }),
     ]);
 
+  const hideLeadPii = !canSeeLeadDetails(employee.role);
+
   return {
     currentEmployee: employee,
     employees: employees.map(publicEmployee),
-    companies,
-    contacts: contacts.map(asContact),
-    deals: deals.map(asDeal),
-    tasks: tasks.map(asTask),
-    threads: threads.map(asThread),
-    activities: activities.map(asActivity),
-    coldCalls: coldCalls.map(asColdCall),
-    leads: leads.map(asLead),
-    followUps: followUps.map(asFollowUp),
+    companies: hideLeadPii ? [] : companies,
+    contacts: hideLeadPii ? [] : contacts.map(asContact),
+    deals: hideLeadPii ? [] : deals.map(asDeal),
+    tasks: hideLeadPii ? [] : tasks.map(asTask),
+    threads: hideLeadPii ? [] : threads.map(asThread),
+    activities: hideLeadPii ? activities.map((row) => redactActivity(asActivity(row))) : activities.map(asActivity),
+    coldCalls: coldCalls.map((row) => {
+      const call = asColdCall(row);
+      return hideLeadPii ? redactColdCall(call) : call;
+    }),
+    leads: leads.map((row) => {
+      const lead = asLead(row);
+      return hideLeadPii ? redactLead(lead) : lead;
+    }),
+    followUps: followUps.map((row) => {
+      const item = asFollowUp(row);
+      return hideLeadPii ? redactFollowUp(item) : item;
+    }),
     workLogs: workLogs.map(asDevWork),
   };
 }
