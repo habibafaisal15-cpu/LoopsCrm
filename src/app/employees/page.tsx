@@ -122,7 +122,7 @@ export default function EmployeesPage() {
 
       <Modal open={open} title="Add employee" onClose={() => setOpen(false)}>
         <form
-          className="form-grid"
+          className="form-grid form-grid-2"
           onSubmit={async (event) => {
             event.preventDefault();
             await addEmployee({

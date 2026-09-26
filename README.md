@@ -13,19 +13,9 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000). Data lives in Supabase Postgres.
 
-Team login password (until you change it): `loops123`
+Admin login (until you change it): `habiba@loopscrm.com` / `loops123`
 
-| Role | Email |
-| --- | --- |
-| Admin | habib@loopscrm.com |
-| Manager | noor@loopscrm.com |
-| Business Developer | ayesha@loopscrm.com |
-| Business Developer | hamza@loopscrm.com |
-| Support | danish@loopscrm.com |
-| Developer | zain@loopscrm.com |
-| Developer | maha@loopscrm.com |
-
-Admin can add employees, set roles, and open each profile to review that person's work.
+Admin creates every other account (BD, developer, manager) from Team.
 
 ## Deploy on Vercel
 

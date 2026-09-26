@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import type { DealStage, EmployeeRole, TaskType } from "@/data/types";
 import { roleLabel } from "@/data/types";
@@ -126,8 +128,24 @@ export function Modal({
   onClose: () => void;
   children: React.ReactNode;
 }) {
-  if (!open) return null;
-  return (
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  }, [open]);
+
+  if (!open || !mounted) return null;
+
+  return createPortal(
     <div className="modal-backdrop" onClick={onClose}>
       <div className="modal" onClick={(event) => event.stopPropagation()} role="dialog">
         <div className="modal-head">
@@ -136,8 +154,9 @@ export function Modal({
             <X size={16} />
           </button>
         </div>
-        {children}
+        <div className="modal-body">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
