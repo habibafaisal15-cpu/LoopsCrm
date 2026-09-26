@@ -59,6 +59,7 @@ export async function deleteEmployeesAndWork(ids: string[]) {
     db.activity.deleteMany({ where: { ownerId: { in: ids } } }),
     db.message.deleteMany({ where: { thread: { ownerId: { in: ids } } } }),
     db.thread.deleteMany({ where: { ownerId: { in: ids } } }),
+    db.teamMessage.deleteMany({ where: { senderId: { in: ids } } }),
     db.task.deleteMany({ where: { ownerId: { in: ids } } }),
     db.deal.deleteMany({ where: { ownerId: { in: ids } } }),
     db.contact.deleteMany({ where: { ownerId: { in: ids } } }),

@@ -27,6 +27,7 @@ import type {
   Lead,
   LeadStatus,
   TaskItem,
+  TeamChatMessage,
   TaskType,
   UserProfile,
 } from "@/data/types";
@@ -56,6 +57,7 @@ interface CrmContextValue extends CrmData {
   leads: Lead[];
   followUps: FollowUpItem[];
   workLogs: DevWorkItem[];
+  teamMessages: TeamChatMessage[];
   isDeveloper: boolean;
   isSales: boolean;
   companyById: (id: string) => Company | undefined;
@@ -73,6 +75,8 @@ interface CrmContextValue extends CrmData {
     workLogs: DevWorkItem[];
   };
   refresh: () => Promise<void>;
+  refreshChat: () => Promise<void>;
+  sendTeamMessage: (text: string) => Promise<void>;
   logout: () => Promise<void>;
   addEmployee: (
     input: Omit<Employee, "id" | "status" | "joinedAt"> & { joinedAt?: string; password?: string },
@@ -158,6 +162,11 @@ export function CrmProvider({ children }: { children: ReactNode }) {
     setHydrated(true);
   }, []);
 
+  const refreshChat = useCallback(async () => {
+    const payload = await api<{ teamMessages: TeamChatMessage[] }>("/api/chat");
+    setData((prev) => (prev ? { ...prev, teamMessages: payload.teamMessages } : prev));
+  }, []);
+
   useEffect(() => {
     refresh().catch(() => {
       router.push("/login");
@@ -193,6 +202,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
   const leads = data?.leads ?? [];
   const followUps = data?.followUps ?? [];
   const workLogs = data?.workLogs ?? [];
+  const teamMessages = data?.teamMessages ?? [];
 
   const value = useMemo<CrmContextValue>(() => {
     const isAdmin = currentEmployee.role === "admin";
@@ -211,6 +221,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       leads,
       followUps,
       workLogs,
+      teamMessages,
       profile: {
         name: currentEmployee.name,
         role: roleLabel(currentEmployee.role),
@@ -248,6 +259,11 @@ export function CrmProvider({ children }: { children: ReactNode }) {
         workLogs: owned(workLogs, employeeId),
       }),
       refresh,
+      refreshChat,
+      sendTeamMessage: async (text) => {
+        await api("/api/chat", { method: "POST", body: JSON.stringify({ text }) });
+        await refreshChat();
+      },
       logout: async () => {
         await api("/api/auth/logout", { method: "POST" });
         router.push("/login");
@@ -283,6 +299,8 @@ export function CrmProvider({ children }: { children: ReactNode }) {
     followUps,
     leads,
     workLogs,
+    teamMessages,
+    refreshChat,
     busy,
     companies,
     contacts,

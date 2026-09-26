@@ -43,7 +43,7 @@ const links: {
   { href: "/deals", label: "Deals", icon: Handshake, roles: ["admin", "sales"] },
   { href: "/tasks", label: "Tasks", icon: CheckSquare, roles: ["admin", "manager", "sales", "developer", "support"] },
   { href: "/calendar", label: "Calendar", icon: CalendarDays, roles: ["admin", "sales", "support"] },
-  { href: "/messages", label: "Messages", icon: MessageSquare, roles: ["admin", "sales", "support"] },
+  { href: "/messages", label: "Team chat", icon: MessageSquare },
   { href: "/employees", label: "Team", icon: UserRound, roles: ["admin", "manager"] },
   { href: "/reports", label: "Reports", icon: PieChart, roles: ["admin", "manager"] },
   { href: "/settings", label: "Settings", icon: Settings },

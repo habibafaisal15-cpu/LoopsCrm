@@ -178,6 +178,14 @@ export interface DevWorkItem {
   ownerId: string;
 }
 
+export interface TeamChatMessage {
+  id: string;
+  text: string;
+  senderId: string;
+  senderName: string;
+  createdAt: string;
+}
+
 export interface CrmData {
   employees: Employee[];
   contacts: Contact[];
@@ -190,6 +198,7 @@ export interface CrmData {
   leads: Lead[];
   followUps: FollowUpItem[];
   workLogs: DevWorkItem[];
+  teamMessages: TeamChatMessage[];
 }
 
 export interface UserProfile {

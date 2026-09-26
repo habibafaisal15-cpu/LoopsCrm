@@ -956,6 +956,58 @@ a {
   overflow: hidden;
 }
 
+.team-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 140px);
+}
+
+.team-chat .bubble-list {
+  flex: 1;
+  min-height: 280px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.bubble-name {
+  font-size: 11px;
+  font-weight: 650;
+  margin-bottom: 4px;
+  color: var(--brand);
+}
+
+.bubble-time {
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
+.team-chat {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 140px);
+}
+
+.team-chat .bubble-list {
+  flex: 1;
+  min-height: 280px;
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.bubble-name {
+  font-size: 11px;
+  font-weight: 650;
+  margin-bottom: 4px;
+  color: var(--brand);
+}
+
+.bubble-time {
+  margin-top: 6px;
+  font-size: 11px;
+  opacity: 0.7;
+}
+
 .thread-item {
   width: 100%;
   border: 0;
@@ -970,6 +1022,10 @@ a {
 
 .thread-item.active {
   background: var(--surface-2);
+}
+
+.chat-member {
+  cursor: default;
 }
 
 .bubble-list {

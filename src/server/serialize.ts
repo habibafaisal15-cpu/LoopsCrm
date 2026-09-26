@@ -11,6 +11,7 @@ import type {
   EmployeeStatus,
   DevWorkItem,
   DevWorkKind,
+  TeamChatMessage,
   FollowUpItem,
   FollowUpOutcome,
   Lead,
@@ -264,6 +265,22 @@ export function redactActivity(item: Activity): Activity {
     ...item,
     text: labels[item.type] || "Logged work",
     detail: undefined,
+  };
+}
+
+export function asTeamMessage(row: {
+  id: string;
+  text: string;
+  senderId: string;
+  senderName: string;
+  createdAt: Date;
+}): TeamChatMessage {
+  return {
+    id: row.id,
+    text: row.text,
+    senderId: row.senderId,
+    senderName: row.senderName,
+    createdAt: row.createdAt.toISOString(),
   };
 }
 

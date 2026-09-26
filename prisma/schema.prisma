@@ -29,8 +29,9 @@ model Employee {
   activities   Activity[]
   coldCalls    ColdCall[]
   leads        Lead[]
-  followUps    FollowUp[]
-  workLogs     DevWork[]
+  followUps     FollowUp[]
+  workLogs      DevWork[]
+  teamMessages  TeamMessage[]
 }
 
 model Company {
@@ -172,4 +173,13 @@ model DevWork {
   details   String   @default("")
   ownerId   String
   owner     Employee @relation(fields: [ownerId], references: [id])
+}
+
+model TeamMessage {
+  id         String   @id
+  text       String
+  senderId   String
+  senderName String
+  createdAt  DateTime @default(now())
+  sender     Employee @relation(fields: [senderId], references: [id])
 }

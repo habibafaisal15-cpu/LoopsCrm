@@ -9,6 +9,7 @@ import {
   asFollowUp,
   asLead,
   asTask,
+  asTeamMessage,
   asThread,
   publicEmployee,
   redactActivity,
@@ -25,7 +26,7 @@ function ownerFilter(employee: Employee) {
 
 export async function loadWorkspace(employee: Employee) {
   const filter = ownerFilter(employee);
-  const [employees, companies, contacts, deals, tasks, threads, activities, coldCalls, leads, followUps, workLogs] =
+  const [employees, companies, contacts, deals, tasks, threads, activities, coldCalls, leads, followUps, workLogs, teamMessages] =
     await Promise.all([
       db.employee.findMany({ orderBy: { createdAt: "desc" } }),
       db.company.findMany({ orderBy: { name: "asc" } }),
@@ -45,6 +46,7 @@ export async function loadWorkspace(employee: Employee) {
       db.lead.findMany({ where: filter, orderBy: { createdAt: "desc" } }),
       db.followUp.findMany({ where: filter, orderBy: { dueAt: "asc" } }),
       db.devWork.findMany({ where: filter, orderBy: { workedAt: "desc" } }),
+      db.teamMessage.findMany({ orderBy: { createdAt: "asc" }, take: 300 }),
     ]);
 
   const hideLeadPii = !canSeeLeadDetails(employee.role);
@@ -75,6 +77,7 @@ export async function loadWorkspace(employee: Employee) {
       return hideLeadPii ? redactFollowUp(item) : item;
     }),
     workLogs: workLogs.map(asDevWork),
+    teamMessages: teamMessages.map(asTeamMessage),
   };
 }
 
@@ -322,6 +325,25 @@ export async function toggleTask(actor: Employee, id: string) {
     });
   }
   return asTask(updated);
+}
+
+export async function listTeamMessages() {
+  const rows = await db.teamMessage.findMany({ orderBy: { createdAt: "asc" }, take: 300 });
+  return rows.map(asTeamMessage);
+}
+
+export async function sendTeamMessage(actor: Employee, text: string) {
+  const trimmed = text.trim();
+  if (!trimmed) throw new Error("Message text is required");
+  const row = await db.teamMessage.create({
+    data: {
+      id: nextId("tm"),
+      text: trimmed,
+      senderId: actor.id,
+      senderName: actor.name,
+    },
+  });
+  return asTeamMessage(row);
 }
 
 export async function sendMessage(actor: Employee, threadId: string, text: string) {
