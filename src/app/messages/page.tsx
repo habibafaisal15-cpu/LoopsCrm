@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useCrm } from "@/context/CrmContext";
 import { Avatar, Button, PageHeader } from "@/components/ui";
+import { roleLabel } from "@/data/types";
 import { formatDateTime } from "@/lib/utils";
 
 export default function MessagesPage() {
@@ -47,7 +48,10 @@ export default function MessagesPage() {
               <Avatar name={employee.name} size="sm" />
               <div className="copy">
                 <strong>{employee.name}</strong>
-                <span>{employee.title || employee.role}</span>
+                <span>
+                  {roleLabel(employee.role)}
+                  {employee.title ? ` · ${employee.title}` : ""}
+                </span>
               </div>
             </div>
           ))}
