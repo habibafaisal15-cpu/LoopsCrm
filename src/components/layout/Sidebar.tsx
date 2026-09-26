@@ -51,7 +51,7 @@ const links: {
 
 export function Sidebar({ open, onNavigate }: { open: boolean; onNavigate: () => void }) {
   const pathname = usePathname();
-  const { currentEmployee } = useCrm();
+  const { currentEmployee, unreadChatCount } = useCrm();
   const role = currentEmployee.role;
   const visible = links.filter((link) => !link.roles || link.roles.includes(role));
 
@@ -67,6 +67,7 @@ export function Sidebar({ open, onNavigate }: { open: boolean; onNavigate: () =>
             pathname === link.href ||
             (link.href !== "/" && pathname.startsWith(`${link.href}/`));
           const Icon = link.icon;
+          const unread = link.href === "/messages" ? unreadChatCount : 0;
           return (
             <Link
               key={link.href}
@@ -74,7 +75,10 @@ export function Sidebar({ open, onNavigate }: { open: boolean; onNavigate: () =>
               onClick={onNavigate}
               className={cn("nav-item", active && "active")}
             >
-              <Icon size={18} />
+              <span className="nav-icon">
+                <Icon size={18} />
+                {unread > 0 ? <span className="nav-badge">{unread > 99 ? "99+" : unread}</span> : null}
+              </span>
               {link.label}
             </Link>
           );

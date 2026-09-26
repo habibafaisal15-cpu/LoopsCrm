@@ -7,7 +7,7 @@ import { roleLabel } from "@/data/types";
 import { formatDateTime } from "@/lib/utils";
 
 export default function MessagesPage() {
-  const { teamMessages, employees, currentEmployee, sendTeamMessage, refreshChat } = useCrm();
+  const { teamMessages, employees, currentEmployee, sendTeamMessage, refreshChat, markChatRead } = useCrm();
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const scroller = useRef<HTMLDivElement>(null);
@@ -18,11 +18,12 @@ export default function MessagesPage() {
   );
 
   useEffect(() => {
+    void markChatRead();
     const timer = window.setInterval(() => {
-      void refreshChat();
+      void refreshChat().then(() => markChatRead());
     }, 5000);
     return () => window.clearInterval(timer);
-  }, [refreshChat]);
+  }, [refreshChat, markChatRead]);
 
   useEffect(() => {
     scroller.current?.scrollTo({ top: scroller.current.scrollHeight });

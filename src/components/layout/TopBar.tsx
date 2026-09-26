@@ -17,7 +17,7 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
     currentEmployee,
     profile,
     logout,
-    visibleThreads,
+    unreadChatCount,
     canSeeLeadDetails,
   } = useCrm();
   const [query, setQuery] = useState("");
@@ -84,12 +84,12 @@ export function TopBar({ onMenu }: { onMenu: () => void }) {
 
       <div className="top-actions">
         <ThemeToggle compact />
-        <div className="bell-wrap">
-          <button className="icon-btn" aria-label="Notifications">
-            <Bell size={18} />
-          </button>
-          {visibleThreads.some((thread) => thread.unread) ? <span className="bell-dot" /> : null}
-        </div>
+        <Link href="/messages" className="bell-wrap icon-btn" aria-label="Team chat">
+          <Bell size={18} />
+          {unreadChatCount > 0 ? (
+            <span className="nav-badge">{unreadChatCount > 99 ? "99+" : unreadChatCount}</span>
+          ) : null}
+        </Link>
         <div className="user-menu">
           <button className="user-chip" onClick={() => setMenuOpen((value) => !value)}>
             <Avatar name={currentEmployee.name || "User"} />

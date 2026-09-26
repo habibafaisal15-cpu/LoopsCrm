@@ -189,6 +189,29 @@ a {
   font-weight: 600;
 }
 
+.nav-icon,
+.bell-wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -7px;
+  right: -9px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--danger);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
 .sidebar-foot {
   margin-top: auto;
   padding: 18px 12px 8px;
@@ -319,6 +342,11 @@ a {
 
 .bell-wrap {
   position: relative;
+}
+
+.bell-wrap .nav-badge {
+  top: -2px;
+  right: -2px;
 }
 
 .bell-dot {

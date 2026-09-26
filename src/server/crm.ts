@@ -78,6 +78,7 @@ export async function loadWorkspace(employee: Employee) {
     }),
     workLogs: workLogs.map(asDevWork),
     teamMessages: teamMessages.map(asTeamMessage),
+    unreadChatCount: await unreadTeamChatCount(employee.id),
   };
 }
 
@@ -325,6 +326,26 @@ export async function toggleTask(actor: Employee, id: string) {
     });
   }
   return asTask(updated);
+}
+
+export async function unreadTeamChatCount(employeeId: string) {
+  const employee = await db.employee.findUnique({
+    where: { id: employeeId },
+    select: { chatReadAt: true },
+  });
+  return db.teamMessage.count({
+    where: {
+      senderId: { not: employeeId },
+      ...(employee?.chatReadAt ? { createdAt: { gt: employee.chatReadAt } } : {}),
+    },
+  });
+}
+
+export async function markTeamChatRead(employeeId: string) {
+  await db.employee.update({
+    where: { id: employeeId },
+    data: { chatReadAt: new Date() },
+  });
 }
 
 export async function listTeamMessages() {

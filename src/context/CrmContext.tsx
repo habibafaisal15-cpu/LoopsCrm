@@ -35,6 +35,7 @@ import { roleLabel } from "@/data/types";
 
 interface WorkspacePayload extends CrmData {
   currentEmployee: Employee;
+  unreadChatCount: number;
 }
 
 interface CrmContextValue extends CrmData {
@@ -58,6 +59,7 @@ interface CrmContextValue extends CrmData {
   followUps: FollowUpItem[];
   workLogs: DevWorkItem[];
   teamMessages: TeamChatMessage[];
+  unreadChatCount: number;
   isDeveloper: boolean;
   isSales: boolean;
   companyById: (id: string) => Company | undefined;
@@ -76,6 +78,7 @@ interface CrmContextValue extends CrmData {
   };
   refresh: () => Promise<void>;
   refreshChat: () => Promise<void>;
+  markChatRead: () => Promise<void>;
   sendTeamMessage: (text: string) => Promise<void>;
   logout: () => Promise<void>;
   addEmployee: (
@@ -163,8 +166,15 @@ export function CrmProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshChat = useCallback(async () => {
-    const payload = await api<{ teamMessages: TeamChatMessage[] }>("/api/chat");
-    setData((prev) => (prev ? { ...prev, teamMessages: payload.teamMessages } : prev));
+    const payload = await api<{ teamMessages: TeamChatMessage[]; unreadCount: number }>("/api/chat");
+    setData((prev) =>
+      prev ? { ...prev, teamMessages: payload.teamMessages, unreadChatCount: payload.unreadCount } : prev,
+    );
+  }, []);
+
+  const markChatRead = useCallback(async () => {
+    await api("/api/chat", { method: "PATCH" });
+    setData((prev) => (prev ? { ...prev, unreadChatCount: 0 } : prev));
   }, []);
 
   useEffect(() => {
@@ -203,6 +213,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
   const followUps = data?.followUps ?? [];
   const workLogs = data?.workLogs ?? [];
   const teamMessages = data?.teamMessages ?? [];
+  const unreadChatCount = data?.unreadChatCount ?? 0;
 
   const value = useMemo<CrmContextValue>(() => {
     const isAdmin = currentEmployee.role === "admin";
@@ -222,6 +233,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       followUps,
       workLogs,
       teamMessages,
+      unreadChatCount,
       profile: {
         name: currentEmployee.name,
         role: roleLabel(currentEmployee.role),
@@ -260,6 +272,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       }),
       refresh,
       refreshChat,
+      markChatRead,
       sendTeamMessage: async (text) => {
         await api("/api/chat", { method: "POST", body: JSON.stringify({ text }) });
         await refreshChat();
@@ -300,7 +313,9 @@ export function CrmProvider({ children }: { children: ReactNode }) {
     leads,
     workLogs,
     teamMessages,
+    unreadChatCount,
     refreshChat,
+    markChatRead,
     busy,
     companies,
     contacts,
