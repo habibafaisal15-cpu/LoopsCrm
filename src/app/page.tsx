@@ -25,7 +25,7 @@ export default function DashboardPage() {
       <div className="hero">
         <div>
           <h1>
-            {greetingFor()}, {profile.greetingName} ✨
+            {greetingFor()}, {profile.greetingName}
           </h1>
           <p>
             {canSeeAllWork && !canSeeLeadDetails
