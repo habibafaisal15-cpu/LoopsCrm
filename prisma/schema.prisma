@@ -1,0 +1,173 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Employee {
+  id           String     @id
+  name         String
+  greetingName String
+  email        String     @unique
+  passwordHash String
+  phone        String
+  role         String
+  title        String
+  department   String
+  joinedAt     DateTime
+  bio          String     @default("")
+  status       String     @default("active")
+  createdAt    DateTime   @default(now())
+  contacts     Contact[]
+  deals        Deal[]
+  tasks        Task[]
+  threads      Thread[]
+  activities   Activity[]
+  coldCalls    ColdCall[]
+  leads        Lead[]
+  followUps    FollowUp[]
+  workLogs     DevWork[]
+}
+
+model Company {
+  id        String    @id
+  name      String
+  industry  String
+  city      String
+  employees Int
+  website   String
+  contacts  Contact[]
+  deals     Deal[]
+  tasks     Task[]
+}
+
+model Contact {
+  id        String   @id
+  name      String
+  email     String
+  phone     String
+  title     String
+  status    String
+  companyId String
+  ownerId   String
+  company   Company  @relation(fields: [companyId], references: [id])
+  owner     Employee @relation(fields: [ownerId], references: [id])
+  deals     Deal[]
+  tasks     Task[]
+  threads   Thread[]
+}
+
+model Deal {
+  id        String   @id
+  title     String
+  value     Int
+  stage     String
+  closeDate DateTime
+  companyId String
+  contactId String
+  ownerId   String
+  company   Company  @relation(fields: [companyId], references: [id])
+  contact   Contact  @relation(fields: [contactId], references: [id])
+  owner     Employee @relation(fields: [ownerId], references: [id])
+}
+
+model Task {
+  id        String   @id
+  title     String
+  dueAt     DateTime
+  type      String
+  done      Boolean  @default(false)
+  companyId String?
+  contactId String?
+  ownerId   String
+  company   Company? @relation(fields: [companyId], references: [id])
+  contact   Contact? @relation(fields: [contactId], references: [id])
+  owner     Employee @relation(fields: [ownerId], references: [id])
+}
+
+model Thread {
+  id        String    @id
+  unread    Boolean   @default(false)
+  updatedAt DateTime
+  contactId String
+  ownerId   String
+  contact   Contact   @relation(fields: [contactId], references: [id])
+  owner     Employee  @relation(fields: [ownerId], references: [id])
+  messages  Message[]
+}
+
+model Message {
+  id       String   @id
+  from     String
+  text     String
+  time     DateTime
+  threadId String
+  thread   Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id      String   @id
+  type    String
+  text    String
+  detail  String?
+  time    DateTime
+  ownerId String
+  owner   Employee @relation(fields: [ownerId], references: [id])
+}
+
+model ColdCall {
+  id       String   @id
+  calledAt DateTime
+  name     String
+  phone    String
+  company  String   @default("")
+  response String
+  notes    String   @default("")
+  ownerId  String
+  leadId   String?
+  owner    Employee @relation(fields: [ownerId], references: [id])
+  lead     Lead?    @relation(fields: [leadId], references: [id])
+}
+
+model Lead {
+  id        String     @id
+  name      String
+  phone     String
+  email     String     @default("")
+  company   String     @default("")
+  source    String     @default("cold_call")
+  status    String
+  notes     String     @default("")
+  ownerId   String
+  createdAt DateTime   @default(now())
+  closedAt  DateTime?
+  owner     Employee   @relation(fields: [ownerId], references: [id])
+  calls     ColdCall[]
+  followUps FollowUp[]
+}
+
+model FollowUp {
+  id        String   @id
+  leadId    String
+  ownerId   String
+  dueAt     DateTime
+  details   String
+  outcome   String
+  result    String   @default("")
+  createdAt DateTime @default(now())
+  lead      Lead     @relation(fields: [leadId], references: [id])
+  owner     Employee @relation(fields: [ownerId], references: [id])
+}
+
+model DevWork {
+  id        String   @id
+  workedAt  DateTime
+  kind      String
+  title     String
+  details   String   @default("")
+  ownerId   String
+  owner     Employee @relation(fields: [ownerId], references: [id])
+}

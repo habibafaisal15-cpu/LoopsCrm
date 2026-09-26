@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Loops CRM
 
-## Getting Started
+Interactive sales CRM with employee logins, a Next.js API, and a database. Deployable on Vercel.
 
-First, run the development server:
+## Local setup
 
 ```bash
+cp .env.example .env
+npm install
+npm run db:setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Local data lives in `prisma/dev.db`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Team login password (until you change it): `loops123`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Role | Email |
+| --- | --- |
+| Admin | habib@loopscrm.com |
+| Manager | noor@loopscrm.com |
+| Business Developer | ayesha@loopscrm.com |
+| Business Developer | hamza@loopscrm.com |
+| Support | danish@loopscrm.com |
+| Developer | zain@loopscrm.com |
+| Developer | maha@loopscrm.com |
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Admin can add employees, set roles, and open each profile to review that person's work.
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Vercel’s filesystem is ephemeral, so production needs a hosted SQLite-compatible database. [Turso](https://turso.tech) is the usual match.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Create a Turso database and copy the URL and token.
+2. Import this repo into Vercel.
+3. Set environment variables:
+
+- `DATABASE_URL` = `file:./prisma/dev.db` (used by Prisma generate)
+- `TURSO_DATABASE_URL` = your `libsql://...` URL
+- `TURSO_AUTH_TOKEN` = your Turso token
+- `AUTH_SECRET` = a long random string
+
+4. From your machine, push the schema and seed once against Turso:
+
+```bash
+$env:TURSO_DATABASE_URL="libsql://..."
+$env:TURSO_AUTH_TOKEN="..."
+$env:DATABASE_URL="file:./prisma/dev.db"
+npx tsx prisma/seed.ts
+```
+
+The seed script writes through the same Prisma client, so with Turso env vars set it seeds production. If the production database is empty, the first successful API call also seeds demo accounts.
+
+5. Deploy.
+
+## API
+
+Authenticated JSON routes live under `/api`:
+
+- `POST /api/auth/login` and `POST /api/auth/logout`
+- `GET /api/bootstrap`
+- Employees, contacts, companies, deals, tasks, messages, and profile mutations
