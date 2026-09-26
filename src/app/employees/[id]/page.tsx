@@ -133,6 +133,22 @@ export default function EmployeeProfilePage() {
 
       {canViewWork ? (
       <>
+      {employee.role === "manager" ? (
+      <div className="kpi-row">
+        <Card className="kpi">
+          <div className="label">Tasks done today</div>
+          <div className="value">
+            {work.tasks.filter((task) => task.done && inWorkRange(task.completedAt || task.dueAt, "today")).length}
+          </div>
+          <div className="trend">{work.tasks.filter((task) => task.done).length} total done</div>
+        </Card>
+        <Card className="kpi">
+          <div className="label">Open tasks</div>
+          <div className="value">{work.tasks.filter((task) => !task.done).length}</div>
+        </Card>
+      </div>
+      ) : null}
+
       {employee.role === "sales" || employee.role === "developer" ? (
       <div className="kpi-row">
         {employee.role === "sales" ? (

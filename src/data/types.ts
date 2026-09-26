@@ -22,9 +22,9 @@ export const PIPELINE_STAGES: { id: DealStage; label: string }[] = [
 
 export const EMPLOYEE_ROLES: { id: EmployeeRole; label: string; description: string }[] = [
   { id: "admin", label: "Admin", description: "See every lead and phone number, add employees, and review all work" },
-  { id: "manager", label: "Manager", description: "See who did how many calls, leads and follow-ups — not names or numbers" },
-  { id: "sales", label: "Business Developer", description: "Daily cold calls, leads, follow-ups and closed clients" },
-  { id: "developer", label: "Developer", description: "Log websites, POS builds, discussions, ideas and extra work" },
+  { id: "manager", label: "Manager", description: "See team counts and log daily tasks. Admin sees tasks you mark done." },
+  { id: "sales", label: "Business Developer", description: "Daily cold calls, leads, follow-ups, clients and your own tasks" },
+  { id: "developer", label: "Developer", description: "Log websites, POS builds, discussions, ideas and daily tasks" },
   { id: "support", label: "Support", description: "Own conversations and customer tasks" },
 ];
 
@@ -79,6 +79,7 @@ export interface TaskItem {
   dueAt: string;
   type: TaskType;
   done: boolean;
+  completedAt?: string;
   companyId?: string;
   contactId?: string;
   ownerId: string;

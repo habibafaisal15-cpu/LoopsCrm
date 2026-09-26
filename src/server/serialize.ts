@@ -89,6 +89,7 @@ export function asTask(row: {
   dueAt: Date;
   type: string;
   done: boolean;
+  completedAt?: Date | null;
   companyId: string | null;
   contactId: string | null;
   ownerId: string;
@@ -99,6 +100,7 @@ export function asTask(row: {
     dueAt: row.dueAt.toISOString(),
     type: row.type as TaskItem["type"],
     done: row.done,
+    completedAt: row.completedAt?.toISOString(),
     companyId: row.companyId ?? undefined,
     contactId: row.contactId ?? undefined,
     ownerId: row.ownerId,

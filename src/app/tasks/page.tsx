@@ -11,7 +11,6 @@ export default function TasksPage() {
   const {
     visibleTasks,
     companies,
-    visibleContacts,
     employees,
     addTask,
     toggleTask,
@@ -25,9 +24,9 @@ export default function TasksPage() {
   const [form, setForm] = useState({
     title: "",
     dueAt: new Date().toISOString().slice(0, 16),
-    type: "call" as TaskType,
-    companyId: companies[0]?.id ?? "",
-    contactId: visibleContacts[0]?.id ?? "",
+    type: "task" as TaskType,
+    companyId: "",
+    contactId: "",
     ownerId: currentEmployee.id,
   });
 
@@ -43,7 +42,7 @@ export default function TasksPage() {
     <>
       <PageHeader
         title="Tasks"
-        subtitle="Calls, emails, meetings and follow-ups."
+        subtitle="Add today's work. When you mark a task done, admin can see what you finished."
         action={
           <Button onClick={() => setOpen(true)}>
             <Plus size={16} />
@@ -60,7 +59,8 @@ export default function TasksPage() {
 
       <Card>
         <div className="list">
-          {rows.map((task) => (
+          {rows.length ? (
+            rows.map((task) => (
             <div className="list-row" key={task.id}>
               <button
                 className={`task-check ${task.done ? "done" : ""}`}
@@ -72,12 +72,16 @@ export default function TasksPage() {
                 <span>
                   {formatDateTime(task.dueAt)}
                   {task.companyId ? ` · ${companyById(task.companyId)?.name}` : ""}
-                  {` · ${employeeById(task.ownerId)?.name ?? ""}`}
+                  {canAssignWork ? ` · ${employeeById(task.ownerId)?.name ?? ""}` : ""}
+                  {task.done ? " · Done" : ""}
                 </span>
               </div>
               <TypePill type={task.type} />
             </div>
-          ))}
+            ))
+          ) : (
+            <p className="empty-note">No tasks yet. Add what you will do today, then mark it done when finished.</p>
+          )}
         </div>
       </Card>
 
@@ -87,11 +91,22 @@ export default function TasksPage() {
           onSubmit={async (event) => {
             event.preventDefault();
             await addTask({
-              ...form,
+              title: form.title,
+              type: form.type,
+              companyId: form.companyId || undefined,
+              contactId: form.contactId || undefined,
               ownerId: canAssignWork ? form.ownerId : currentEmployee.id,
               dueAt: new Date(form.dueAt).toISOString(),
             });
             setOpen(false);
+            setForm({
+              title: "",
+              dueAt: new Date().toISOString().slice(0, 16),
+              type: "task",
+              companyId: "",
+              contactId: "",
+              ownerId: currentEmployee.id,
+            });
           }}
         >
           <Field label="Task">
@@ -120,18 +135,21 @@ export default function TasksPage() {
               ))}
             </select>
           </Field>
-          <Field label="Company">
-            <select
-              value={form.companyId}
-              onChange={(event) => setForm({ ...form, companyId: event.target.value })}
-            >
-              {companies.map((company) => (
-                <option key={company.id} value={company.id}>
-                  {company.name}
-                </option>
-              ))}
-            </select>
-          </Field>
+          {companies.length ? (
+            <Field label="Company (optional)">
+              <select
+                value={form.companyId}
+                onChange={(event) => setForm({ ...form, companyId: event.target.value })}
+              >
+                <option value="">No company</option>
+                {companies.map((company) => (
+                  <option key={company.id} value={company.id}>
+                    {company.name}
+                  </option>
+                ))}
+              </select>
+            </Field>
+          ) : null}
           {canAssignWork ? (
             <Field label="Assigned employee">
               <select

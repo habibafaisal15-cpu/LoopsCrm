@@ -230,7 +230,7 @@ export function CrmProvider({ children }: { children: ReactNode }) {
       isSales: currentEmployee.role === "sales",
       visibleContacts: contacts,
       visibleDeals: deals,
-      visibleTasks: tasks,
+      visibleTasks: isAdmin ? tasks : tasks.filter((task) => task.ownerId === currentEmployee.id),
       visibleThreads: threads,
       visibleActivities: activities,
       companyById: (id) => companies.find((company) => company.id === id),

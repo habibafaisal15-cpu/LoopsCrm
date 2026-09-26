@@ -7,6 +7,11 @@ import { useCrm } from "@/context/CrmContext";
 import { Card } from "@/components/ui";
 import { formatDateTime, inWorkRange, type WorkRange } from "@/lib/utils";
 
+function taskDoneAt(task: { done: boolean; completedAt?: string; dueAt: string }) {
+  if (!task.done) return "";
+  return task.completedAt || task.dueAt;
+}
+
 function bdStats(employee: Employee, range: WorkRange, crm: ReturnType<typeof useCrm>) {
   const work = crm.workFor(employee.id);
   const calls = work.coldCalls.filter((call) => inWorkRange(call.calledAt, range)).length;
@@ -15,16 +20,32 @@ function bdStats(employee: Employee, range: WorkRange, crm: ReturnType<typeof us
   const clients = work.leads.filter(
     (lead) => lead.status === "client" && lead.closedAt && inWorkRange(lead.closedAt, range),
   ).length;
-  return { calls, leads, followUps, clients };
+  const tasksDone = work.tasks.filter((task) => {
+    const at = taskDoneAt(task);
+    return Boolean(at && inWorkRange(at, range));
+  }).length;
+  return { calls, leads, followUps, clients, tasksDone };
+}
+
+function taskStats(employee: Employee, range: WorkRange, crm: ReturnType<typeof useCrm>) {
+  const work = crm.workFor(employee.id);
+  return work.tasks.filter((task) => {
+    const at = taskDoneAt(task);
+    return Boolean(at && inWorkRange(at, range));
+  }).length;
 }
 
 export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
   const crm = useCrm();
-  const { employees, workLogs, employeeById } = crm;
+  const { employees, workLogs, employeeById, isAdmin, tasks } = crm;
   const [range, setRange] = useState<WorkRange>("today");
 
   const bds = useMemo(
     () => employees.filter((employee) => employee.role === "sales" && employee.status === "active"),
+    [employees],
+  );
+  const managers = useMemo(
+    () => employees.filter((employee) => employee.role === "manager" && employee.status === "active"),
     [employees],
   );
   const developers = useMemo(
@@ -47,9 +68,23 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
         leads: sum.leads + row.leads,
         followUps: sum.followUps + row.followUps,
         clients: sum.clients + row.clients,
+        tasksDone: sum.tasksDone + row.tasksDone,
       };
     },
-    { calls: 0, leads: 0, followUps: 0, clients: 0 },
+    { calls: 0, leads: 0, followUps: 0, clients: 0, tasksDone: 0 },
+  );
+
+  const managerTasks = managers.reduce((sum, employee) => sum + taskStats(employee, range, crm), 0);
+  const developerTasks = developers.reduce((sum, employee) => sum + taskStats(employee, range, crm), 0);
+  const completedTasks = useMemo(
+    () =>
+      tasks
+        .filter((task) => {
+          const at = taskDoneAt(task);
+          return Boolean(at && inWorkRange(at, range));
+        })
+        .sort((a, b) => +new Date(taskDoneAt(b)) - +new Date(taskDoneAt(a))),
+    [tasks, range],
   );
 
   const rangeLabel = range === "today" ? "today" : range === "week" ? "this week" : "all time";
@@ -89,6 +124,10 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
           <div className="label">Developer logs</div>
           <div className="value">{logs.length}</div>
         </Card>
+        <Card className="kpi">
+          <div className="label">Tasks done</div>
+          <div className="value">{totals.tasksDone + managerTasks + developerTasks}</div>
+        </Card>
       </div>
 
       <div className="settings-grid">
@@ -110,6 +149,7 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
                   <th>Leads</th>
                   <th>Follow-ups</th>
                   <th>Clients</th>
+                  <th>Tasks</th>
                 </tr>
               </thead>
               <tbody>
@@ -126,6 +166,7 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
                       <td>{row.leads}</td>
                       <td>{row.followUps}</td>
                       <td>{row.clients}</td>
+                      <td>{row.tasksDone}</td>
                     </tr>
                   );
                 })}
@@ -144,22 +185,73 @@ export function TeamWorkBoard({ compact = false }: { compact?: boolean }) {
             ) : null}
           </div>
           <div className="list">
-            {developers.map((employee) => {
-              const count = logs.filter((item) => item.ownerId === employee.id).length;
-              return (
-                <Link key={employee.id} href={`/employees/${employee.id}`} className="list-row">
-                  <div className="copy">
-                    <strong>{employee.name}</strong>
-                    <span>
-                      {count} work {count === 1 ? "entry" : "entries"} {rangeLabel}
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
+            {developers.length ? (
+              developers.map((employee) => {
+                const count = logs.filter((item) => item.ownerId === employee.id).length;
+                return (
+                  <Link key={employee.id} href={`/employees/${employee.id}`} className="list-row">
+                    <div className="copy">
+                      <strong>{employee.name}</strong>
+                      <span>
+                        {count} work {count === 1 ? "entry" : "entries"} · {taskStats(employee, range, crm)}{" "}
+                        tasks done {rangeLabel}
+                      </span>
+                    </div>
+                  </Link>
+                );
+              })
+            ) : (
+              <p className="empty-note">No developers on the team yet.</p>
+            )}
           </div>
         </Card>
       </div>
+
+      <Card>
+        <div className="card-head">
+          <h2>Managers</h2>
+        </div>
+        <div className="list">
+          {managers.length ? (
+            managers.map((employee) => (
+              <Link key={employee.id} href={`/employees/${employee.id}`} className="list-row">
+                <div className="copy">
+                  <strong>{employee.name}</strong>
+                  <span>
+                    {taskStats(employee, range, crm)} tasks done {rangeLabel}
+                  </span>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <p className="empty-note">No managers on the team yet.</p>
+          )}
+        </div>
+      </Card>
+
+      {!compact && isAdmin ? (
+        <Card>
+          <div className="card-head">
+            <h2>Completed tasks {rangeLabel}</h2>
+          </div>
+          <div className="list">
+            {completedTasks.length ? (
+              completedTasks.map((task) => (
+                <div className="list-row" key={task.id}>
+                  <div className="copy">
+                    <strong>{task.title || "Task"}</strong>
+                    <span>
+                      {employeeById(task.ownerId)?.name ?? "Teammate"} · {formatDateTime(taskDoneAt(task))}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="empty-note">No tasks marked done in this period.</p>
+            )}
+          </div>
+        </Card>
+      ) : null}
 
       {!compact ? (
         <Card>

@@ -76,17 +76,18 @@ model Deal {
 }
 
 model Task {
-  id        String   @id
-  title     String
-  dueAt     DateTime
-  type      String
-  done      Boolean  @default(false)
-  companyId String?
-  contactId String?
-  ownerId   String
-  company   Company? @relation(fields: [companyId], references: [id])
-  contact   Contact? @relation(fields: [contactId], references: [id])
-  owner     Employee @relation(fields: [ownerId], references: [id])
+  id          String    @id
+  title       String
+  dueAt       DateTime
+  type        String
+  done        Boolean   @default(false)
+  completedAt DateTime?
+  companyId   String?
+  contactId   String?
+  ownerId     String
+  company     Company?  @relation(fields: [companyId], references: [id])
+  contact     Contact?  @relation(fields: [contactId], references: [id])
+  owner       Employee  @relation(fields: [ownerId], references: [id])
 }
 
 model Thread {

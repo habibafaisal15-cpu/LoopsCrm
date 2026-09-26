@@ -31,7 +31,10 @@ export async function loadWorkspace(employee: Employee) {
       db.company.findMany({ orderBy: { name: "asc" } }),
       db.contact.findMany({ where: filter, orderBy: { name: "asc" } }),
       db.deal.findMany({ where: filter, orderBy: { closeDate: "asc" } }),
-      db.task.findMany({ where: filter, orderBy: { dueAt: "asc" } }),
+      db.task.findMany({
+        where: employee.role === "admin" || employee.role === "manager" ? {} : { ownerId: employee.id },
+        orderBy: { dueAt: "asc" },
+      }),
       db.thread.findMany({
         where: filter,
         include: { messages: { orderBy: { time: "asc" } } },
@@ -52,7 +55,11 @@ export async function loadWorkspace(employee: Employee) {
     companies: hideLeadPii ? [] : companies,
     contacts: hideLeadPii ? [] : contacts.map(asContact),
     deals: hideLeadPii ? [] : deals.map(asDeal),
-    tasks: hideLeadPii ? [] : tasks.map(asTask),
+    tasks: tasks.map((row) => {
+      const task = asTask(row);
+      if (employee.role === "admin" || task.ownerId === employee.id) return task;
+      return { ...task, title: "", companyId: undefined, contactId: undefined };
+    }),
     threads: hideLeadPii ? [] : threads.map(asThread),
     activities: hideLeadPii ? activities.map((row) => redactActivity(asActivity(row))) : activities.map(asActivity),
     coldCalls: coldCalls.map((row) => {
@@ -299,15 +306,22 @@ export async function createTask(
 export async function toggleTask(actor: Employee, id: string) {
   const current = await db.task.findUnique({ where: { id } });
   if (!current) throw new Error("Task not found");
-  if (!canSeeAllWork(actor.role) && current.ownerId !== actor.id) {
+  if (actor.role !== "admin" && current.ownerId !== actor.id) {
     throw new Error("You can only update your own tasks");
   }
-  return asTask(
-    await db.task.update({
-      where: { id },
-      data: { done: !current.done },
-    }),
-  );
+  const done = !current.done;
+  const updated = await db.task.update({
+    where: { id },
+    data: { done, completedAt: done ? new Date() : null },
+  });
+  if (done) {
+    await logActivity({
+      type: "work",
+      text: `${actor.greetingName} completed: ${current.title}`,
+      ownerId: current.ownerId,
+    });
+  }
+  return asTask(updated);
 }
 
 export async function sendMessage(actor: Employee, threadId: string, text: string) {

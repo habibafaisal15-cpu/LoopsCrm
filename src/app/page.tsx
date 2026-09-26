@@ -42,6 +42,12 @@ export default function DashboardPage() {
 
       {canSeeAllWork ? <TeamWorkBoard compact /> : null}
 
+      {canSeeAllWork && !canSeeLeadDetails ? (
+        <div className="stack" style={{ marginTop: 24 }}>
+          <UpcomingTasks />
+        </div>
+      ) : null}
+
       {isDeveloper ? (
         <div className="stack" style={{ marginTop: canSeeAllWork ? 24 : 0 }}>
           <div className="kpi-row">
@@ -82,6 +88,7 @@ export default function DashboardPage() {
               )}
             </div>
           </Card>
+          <UpcomingTasks />
         </div>
       ) : null}
 

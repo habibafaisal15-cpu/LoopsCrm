@@ -20,7 +20,7 @@ export default function TeamWorkPage() {
     <>
       <PageHeader
         title="Team work"
-        subtitle="Who did how much work: calls, leads generated, follow-ups taken, clients closed, and developer logs. Lead names and numbers stay hidden from managers."
+        subtitle="Who did how much work: calls, leads, follow-ups, clients, and tasks marked done. Lead names and numbers stay hidden from managers."
       />
       <TeamWorkBoard />
     </>

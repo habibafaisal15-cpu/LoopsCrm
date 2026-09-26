@@ -100,6 +100,10 @@ export default function EmployeesPage() {
                       <span className="chip">
                         {work.leads.filter((lead) => lead.status === "client").length} clients
                       </span>
+                      <span className="chip">
+                        {work.tasks.filter((task) => task.done && inWorkRange(task.completedAt || task.dueAt, "today")).length}{" "}
+                        tasks done today
+                      </span>
                     </>
                   ) : employee.role === "developer" ? (
                     <>
@@ -107,6 +111,18 @@ export default function EmployeesPage() {
                         {work.workLogs.filter((item) => inWorkRange(item.workedAt, "today")).length} logs today
                       </span>
                       <span className="chip">{work.workLogs.length} total work</span>
+                      <span className="chip">
+                        {work.tasks.filter((task) => task.done && inWorkRange(task.completedAt || task.dueAt, "today")).length}{" "}
+                        tasks done today
+                      </span>
+                    </>
+                  ) : employee.role === "manager" ? (
+                    <>
+                      <span className="chip">
+                        {work.tasks.filter((task) => task.done && inWorkRange(task.completedAt || task.dueAt, "today")).length}{" "}
+                        tasks done today
+                      </span>
+                      <span className="chip">{work.tasks.filter((task) => !task.done).length} open tasks</span>
                     </>
                   ) : (
                     <>
