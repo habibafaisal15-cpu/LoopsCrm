@@ -11,7 +11,7 @@ npm run db:setup
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Local data lives in `prisma/dev.db`.
+Open [http://localhost:3000](http://localhost:3000). Data lives in Supabase Postgres.
 
 Team login password (until you change it): `loops123`
 
@@ -29,29 +29,15 @@ Admin can add employees, set roles, and open each profile to review that person'
 
 ## Deploy on Vercel
 
-Vercel’s filesystem is ephemeral, so production needs a hosted SQLite-compatible database. [Turso](https://turso.tech) is the usual match.
+Use the same Supabase database in production.
 
-1. Create a Turso database and copy the URL and token.
-2. Import this repo into Vercel.
-3. Set environment variables:
+1. In Vercel → Project → Settings → Environment Variables, set:
 
-- `DATABASE_URL` = `file:./prisma/dev.db` (used by Prisma generate)
-- `TURSO_DATABASE_URL` = your `libsql://...` URL
-- `TURSO_AUTH_TOKEN` = your Turso token
-- `AUTH_SECRET` = a long random string
+- `DATABASE_URL` — Supabase **Transaction pooler** URI (port `6543`, add `?pgbouncer=true`)
+- `DIRECT_URL` — Supabase **Direct** URI (port `5432`)
+- `AUTH_SECRET` — a long random string
 
-4. From your machine, push the schema and seed once against Turso:
-
-```bash
-$env:TURSO_DATABASE_URL="libsql://..."
-$env:TURSO_AUTH_TOKEN="..."
-$env:DATABASE_URL="file:./prisma/dev.db"
-npx tsx prisma/seed.ts
-```
-
-The seed script writes through the same Prisma client, so with Turso env vars set it seeds production. If the production database is empty, the first successful API call also seeds demo accounts.
-
-5. Deploy.
+2. Redeploy. The first login/bootstrap creates team accounts if the database is empty.
 
 ## API
 
