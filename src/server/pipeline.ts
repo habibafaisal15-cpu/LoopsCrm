@@ -185,12 +185,14 @@ export async function completeFollowUp(
   });
 
   if (input.outcome === "next") {
+    const nextDueAt = input.nextDueAt;
+    if (!nextDueAt) throw new Error("Pick the next follow-up date");
     await db.followUp.create({
       data: {
         id: nextId("fu"),
         leadId: current.leadId,
         ownerId: current.ownerId,
-        dueAt: new Date(input.nextDueAt),
+        dueAt: new Date(nextDueAt),
         details: input.nextDetails || input.result,
         outcome: "pending",
       },
